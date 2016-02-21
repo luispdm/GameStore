@@ -10,7 +10,7 @@
 **Geniola Alberto** (albertogeniola)
 
 ## Description
-We developed an online Game Store for _JavaScript_ games.
+Online GameStore developed for the Web Software Development course at the Aalto University (2015/2016).
 According to the Django framework, the website follows the **MVC** pattern.
 
 There are two kind of users: developers and players. A player can purchase games from the Store and play those he owns, while a developer can upload games, manage his inventory and see sales statistics. The payment service was provided by the **Aalto University** and is a mockup one.
