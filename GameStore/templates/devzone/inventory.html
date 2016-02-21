@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory{% endblock %}
+{% load staticfiles %}
+
+{% comment %}
+    Insertion of style used only in this page in order to show sales statistics
+{% endcomment %}
+{% block pluggable_style %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap-multiselect.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/bootstrap-datepicker3.min.css' %}"/>
+    <style type="text/css">
+        .left-stack {
+            float:left;
+            margin: 10px;
+            display: block;
+        }
+
+        .left-stack > label{
+            display: block;
+        }
+
+        .graph-container {
+            display: block;
+            border: 1px dashed #0D435E;
+        }
+        .page-header{
+            margin-top: 0;
+        }
+        #content{
+            margin-top:50px;
+        }
+        .legend {
+            float:right;
+            display: block;
+            margin-top: 10px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 200px;
+            border: 1px solid #fff;
+            box-shadow: 0 0 20px 10px rgba(13,67,94,0.8);
+            background-color: rgba(13,67,94,0.8);
+            color:#fff;
+            font-weight:bold;
+            padding:5px;
+        }
+
+        #lineChart{
+            float:left;
+        }
+
+        #pie-chart{
+            float:left;
+        }
+
+    </style>
+{% endblock %}
+
+
+{% comment %}
+    Insertion of js used only in this page in order to show sales statistics
+{% endcomment %}
+{% block pluggable_script %}
+    <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-multiselect.js' %}"></script>
+    <script src="{% static 'js/chart.min.js' %}"></script>
+{% endblock %}
+
+{% comment %}
+    It contains filter that the developer can apply to have a better undertanding of his sales
+{% endcomment %}
+{% block sidebar %}
+    <div id="sidebarContent">
+        <div class="left-stack">
+            <label for="period-selector">Display Range:</label>
+            <select name="period" id="period-selector" class="form-control">
+                <option value="day">Daily</option>
+                <option value="week">Weekly</option>
+                <option value="month">Monthly</option>
+            </select>
+        </div>
+
+        <div class="left-stack">
+            <label for="game-selector">Filter by Game</label>
+            <select id="game-selector" name="games" class="form-control" multiple="multiple">
+            </select>
+        </div>
+        <div style="clear:both">
+            <label>Time range:</label>
+            <div class="input-group input-append date datepicker" id="from-selector">
+                <input type="text" class="form-control" name="from-date" placeholder="From..." />
+                <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+            </div>
+            <div class="input-group input-append date datepicker" id="to-selector">
+                <input type="text" class="form-control" name="to-date" placeholder="To..."/>
+                <span class="input-group-addon add-on"><span class="glyphicon glyphicon-calendar"></span></span>
+            </div>
+        </div>
+        <button id="update-button" class="btn-lg btn-primary form-control">Update <span class="glyphicon glyphicon-retweet"> </span></button>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% comment %}
+    # Alberto #
+    A developer might want to have a couple of info:
+    -> How many games have I sold over a period X (day/week/month/total)? -> LineChart: COUNT(games) over days
+    -> Which game have I sold the most in that period? -> Pie chart of COUNT(games) per game
+
+    It is a good idea to provide this feature as a restfull API so data can be queried at runtime.
+    {% endcomment %}
+
+    <div class="page-header">
+        <h1>Inventory and statistics - <small>Developer's view</small></h1>
+    </div>
+    <div class="row">
+        <div class="col-md-12 graph-container">
+            <h3>Sells <small>over time</small></h3>
+            <canvas id="lineChart" width="600" height="300"></canvas>
+            <div class="legend" id="line-legend"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 graph-container">
+            <h3>Sells <small>per game</small></h3>
+            <canvas id="pieChart" width="300" height="300"></canvas>
+            <div class="legend" id="pie-legend"></div>
+        </div>
+    </div>
+
+    {% comment %}
+    # Alberto #
+    Here I load the chart library at the end of the page so that the rest of graphics gets loaded first.
+    Then I build the graphs as needed.
+    {% endcomment %}
+    <script type="application/javascript">
+
+        $( "#navbar-DevArea" ).addClass('active');
+
+        // Document-Ready handler, basic UI intialization
+        $(document).ready(function() {
+            $('#game-selector').multiselect({
+                enableFiltering: true,
+                includeSelectAllOption: true,
+                maxHeight: 600
+            });
+            $(".datepicker").datepicker();
+            $("#update-button").click(queryData);
+            prepopulateFilters().done(function(){
+                queryData();
+            });
+        });
+
+        function prepopulateFilters(){
+            var now = new Date();
+            var start = new Date(now.getFullYear(),now.getMonth(),0);
+            var end = new Date(now.getTime()+84600000);
+            $("#from-selector").datepicker("setDate",start);
+            $("#to-selector").datepicker("setDate",end);
+
+            // Perform an ajax request to the server and retrieve the list of games
+            // of this developer. Once data is received, populate the filters
+            return $.get("{% url 'dev_games' %}",function(data){
+                var options = [];
+                for(var i=0;i<data.games.length;i++) {
+                    options.push({
+                        label: data.games[i].name,
+                        title: data.games[i].name,
+                        value: data.games[i].id,
+                        selected: true});
+                }
+                $('#game-selector').multiselect('dataprovider', options);
+            });
+        }
+
+        // This function read input from filters and sends a request to the server/view
+        // in order to retrieve back data to be shown. When data is availabe, it will be
+        // printed by updateGraphs.
+        function queryData() {
+            // Prepare filters
+            var filters={};
+            filters.period = $("#period-selector").val();
+            filters.from_date = $("#from-selector").datepicker('getDate').toISOString();
+            filters.to_date = $("#to-selector").datepicker('getDate').toISOString();
+            filters.games = $("#game-selector").val();
+
+            $.ajax({
+                url:"{% url 'inventory' %}",
+                data:filters,
+                method:"GET",
+                success:function(data) {
+                    updateGraphs(data);
+                },
+                error:function(){
+                    //TODO.
+                }
+            });
+        }
+
+        function updateGraphs(data){
+            // Get the drawing area
+            var ctx = $("#lineChart").get(0).getContext("2d");
+            var ctx3 = $("#pieChart").get(0).getContext("2d");
+
+            var lineData = {
+                labels: data.line.labels,
+                datasets: [
+                    {
+                        label: "Total sells",
+                        fillColor: "rgba(151,187,205,0.2)",
+                        strokeColor: "rgba(151,187,205,1)",
+                        pointColor: "rgba(151,187,205,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(151,187,205,1)",
+                        data: data.line.dataset
+                    }
+                ]
+            };
+
+            var pieData = data.pie;
+            var options = {
+                          legendTemplate : '<ul>'
+                                          +'<% for (var i=0; i<datasets.length; i++) { %>'
+                                            +'<li>'
+                                            +'<span style=\"background-color:<%=datasets[i].lineColor%>\"></span>'
+                                            +'<% if (datasets[i].label) { %><%= datasets[i].label %><% } %>'
+                                          +'</li>'
+                                        +'<% } %>'
+                                      +'</ul>'
+                          };
+
+            var myLineChart = new Chart(ctx).Line(lineData, options);
+            $("#line-legend").empty().append(myLineChart.generateLegend());
+
+            options.legendTemplate="<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<segments.length; i++){ %><li><span style=\"background-color:<%=segments[i].fillColor%>\"></span><%if(segments[i].label){ %><%=segments[i].label%><% }%></li><% }%></ul>";
+            var myPieChart = new Chart(ctx3).Pie(pieData, options);
+            $("#pie-legend").empty().append(myPieChart.generateLegend());
+        }
+    </script>
+
+{% endblock %}

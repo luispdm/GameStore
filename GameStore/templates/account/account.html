@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Account{% endblock %}
+
+{% block content %}
+
+    {% comment %}
+        Basic div to display some information about the user, name, developer or player
+        And if isn't logged in with facebook we give him the possibility to change his password
+    {% endcomment %}
+    <div class="center-div">
+        <h1 class="form-signin-heading" id="local-title">Profile</h1>
+        <p class="accountP">Username: <span class="accountSpan">{{ user.username }}</span></p>
+        {% if user.profile.is_developer %}
+            <p class="accountP">Account type: <span class="accountSpan">Developer</span></p>
+        {% endif %}
+        {% if user.profile.is_player %}
+            <p class="accountP">Account type: <span class="accountSpan">Player</span></p>
+        {% endif %}
+        <br/>
+        {% if backends.associated|length > 0 %}
+            <p class="accountP">You're logged in with: <span class="accountSpan">Facebook</span></p>
+        {% else %}
+            <a class="btn btn-warning btn-block cartButton" href="{% url 'password_change' %}" id="confirmButton">Change Password</a>
+        {% endif %}
+
+    </div>
+
+{% endblock %}
+
+{% block sidebar %}
+    {% comment %}
+        Additional information
+    {% endcomment %}
+    <div id="sidebarContent">
+        <p class="lead">Your account</p>
+        <p>Here you can find information about your account.</p>
+        <p>If you're a player or a developer.</p>
+        <p>Or change your password if you want.</p>
+    </div>
+
+{% endblock %}

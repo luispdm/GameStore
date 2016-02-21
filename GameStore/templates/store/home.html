@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <script type="application/javascript">
+        $('#sidebar').hide;
+        $('#content').css("width", "100%");
+    </script>
+
+    {% if user.is_authenticated  == False %}
+        <div class="jumbotron">
+            <h1>Your personal Game Store</h1>
+            <p class="lead">Login to get access to our world full of games and fun.</p>
+            <p class="lead">Register today for FREE!.</p>
+            <p class="lead">The navbar on the top gives you access to different features of the website.</p>
+            <p class="lead">Store: click here to browse through the most exciting games!</p>
+            <p class="lead">Profile->Login: You can log in (if you have an account already).</p>
+            <p class="lead">Profile->Registration: register to our website.</p>
+            <p><a class="btn btn-lg btn-success" href="{% url 'register' %}" role="button">Register now</a></p>
+        </div>
+    {% endif %}
+
+    {% if user.is_authenticated and user.profile.is_developer == False %}
+    <div class="jumbotron">
+        <h1>Hello {{ user.username }}!</h1>
+        <br>
+        <p class="lead">This is your home page.</p>
+        <p class="lead">The navbar on the top gives you access to different features of the website.</p>
+        <p class="lead">Store: click here to browse through the most exciting games!</p>
+        <p class="lead">Leaderboard: see current games high scores.</p>
+        <p class="lead">MyGames: you will find all the games you bought.</p>
+        <p class="lead">Profile->Cart: See your cart and complete your order.</p>
+        <p class="lead">Profile->Logout: log out from the website.</p>
+    </div>
+    {% endif %}
+
+
+    {% if user.is_authenticated and user.profile.is_developer %}
+        <div class="jumbotron">
+        <h1>Hello {{ user.username }}!</h1>
+        <br>
+        <p class="lead">This is your home page.</p>
+        <p class="lead">The navbar on the top gives you access to different features of the website.</p>
+        <p class="lead">Store: click here to browse through the most exciting games!</p>
+        <p class="lead">Leaderboard: see current games high scores.</p>
+        <p class="lead">DevArea->Manage games: add, edit and delete the games you develop.</p>
+        <p class="lead">DevArea->Inventory: take a look at your own sales statistics.</p>
+        <p class="lead">Profile->Logout: log out from the website.</p>
+    </div>
+    {% endif %}
+
+    <script type="application/javascript">
+        $( "#navbar-Home" ).addClass('active');
+    </script>
+{% endblock %}

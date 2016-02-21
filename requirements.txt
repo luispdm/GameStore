@@ -1,0 +1,6 @@
+dj-database-url==0.4.0
+Django==1.8
+gunicorn==19.4.5
+whitenoise==2.0.6
+psycopg2==2.6.1
+python-social-auth==0.2.14

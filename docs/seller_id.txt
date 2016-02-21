@@ -1,0 +1,12 @@
+Selled ID: italiancrea2016
+
+Secret Key: 3328913f961f8b2bfb78000b3f9da02b
+
+Live site: https://fast-badlands-87500.herokuapp.com/
+
+
+Facebook app id
+970368946366357
+
+Facebook app secret
+44fe1e054c211f2bcad751d1dee014c1

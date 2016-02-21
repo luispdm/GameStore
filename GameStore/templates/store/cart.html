@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Show cart{% endblock %}
+
+{% block content %}
+
+    <div class="form-signin"  style="max-width: 500px;">
+        <h1 class="form-signin-heading" id="local-title">Cart</h1>
+        {% for i in cart.games %}
+            <div id="div-{{ i.id }}">
+                <div class="imageDiv">
+                    <img alt="No image available" src="{{ i.logo }}" class="gameImage" />
+                </div>
+                <div class="infoDiv">
+                    <p class="lead gameName">{{ i.name }}</p>
+                    <p class="gamePrice"><span>Price: <script type="text/javascript">document.write(formatPrice("{{ i.price }}"))</script></span><span class="btn btn-danger gameRemove" onclick="removeList({{ i.id }})">REMOVE</span></p>
+                </div>
+            </div>
+        {% endfor %}
+        <div style="padding-top: 10px;clear: both;">
+            <hr/>
+            <form action="{% url 'orders' %}" method="POST">
+                {% csrf_token %}
+            <input type="submit" class="btn btn-success" value="Send Order" id="confirmButton">
+            </form>
+        </div>
+    </div>
+
+     <script type="text/javascript">
+
+        //add active class to the navbar item
+        $( "#navbar-Profile" ).addClass('active');
+
+        //initialize the table
+        $( document ).ready(function() {
+            $("#tableId").bootstrapTable();
+        });
+
+        //this function is used to remove a game from the cart.
+        // It notifies to the server and remove the game from the user interface.
+         function removeList(gameid) {
+            $.ajax({
+                method:'POST',
+                url: "{% url 'cart' %}",
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token  }}",
+                    game:gameid,
+                    action:'remove'
+                },
+                success:function(data) {
+                    if (data.error) {
+                        alert("Error: " + data.error);
+                    }
+                    else{
+                        $('#div-'+gameid).fadeOut(400,function(){this.remove()});
+                    }
+                },
+                error: function (data) {
+                    if (data.error) {
+                        alert("There was a problem during the request. Please try again.");
+                    }
+                }
+            })
+        }
+     </script>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div id="sidebarContent">
+        <p class="lead">Your cart.</p>
+        <p>Take a look at the game in your cart and remove them if you want.</p>
+        <p>Or proceed with the purcase.</p>
+    </div>
+
+{% endblock %}

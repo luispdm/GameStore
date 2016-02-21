@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}Game List{% endblock %}
+
+
+{% block content %}
+
+    <div class="table-responsive">
+      <table class="table table-hover" id="tableId" data-id-field="id">
+        <thead>
+          <tr>
+            <th data-field="logo" data-formatter="logoFormatter">Logo</th>
+            <th data-field="name" data-formatter="nameFormatter">Name</th>
+            <th data-field="category" >Category</th>
+            <th data-field="price" data-formatter="priceFormatter">Price</th>
+            <th data-field="publicationDate" data-formatter="dateFormatter" >Publication Date</th>
+              {% if user.is_authenticated and user.profile.is_player %}
+            <th data-field="owned" data-formatter="ownedFormatter" >Owned</th>
+            <th data-field="id" data-formatter="operateFormatter" data-events="operateEvents">Cart</th>
+              {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      </div>
+
+    <!-- Modal -->
+    <div id="modalGame" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h2 class="form-signin-heading">
+                            <span><img src="/" id="logo" alt="No image available" class="gameImage"/></span>
+                            <span id="name">Name</span>
+                    </h2>
+                </div>
+                <div class="modal-body">
+                    <div class="form-signin" id="detailGame">
+                        <h3>Description</h3>
+                        <p id="description"></p>
+                        <h3>Category</h3>
+                        <p id="category"></p>
+                        <h3>Price</h3>
+                        <p id="price"></p>
+                        <h3>Publication Date</h3>
+                        <p id="publicationDate"></p>
+                        <h3>Popularity</h3>
+                        <p id="popularity"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="modalInfo" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <form class="form-signin" id="detailInfo">
+                    <h3 class="form-signin-heading" id="modalMessage">Message</h3>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+
+        $( "#navbar-Store" ).addClass('active');
+
+        //initialize the table and
+        $( document ).ready(function() {
+            $("#tableId").bootstrapTable();
+
+            $.get("{% url 'games' %}", function(data){
+                sendFilter();
+            });
+        });
+
+        //this function add a game tothe cart and handle the server response in order to show to the user the result of his action
+        function add_game_cart(gameid, elem) {
+            $.ajax({
+                method:'POST',
+                url: "{% url 'cart' %}",
+                data: {
+                    csrfmiddlewaretoken: "{{ csrf_token  }}",
+                    game:gameid,
+                    action:'add'
+                },
+                success:function(data) {
+                    var $modalinfo = $("#modalInfo");
+                    if (data.error){
+                        $('#modalMessage').text("Ops, that looks like an error");
+                        $modalinfo.removeClass('done info');
+                        $modalinfo.addClass('error');
+                        $modalinfo.modal();
+                    }
+                    else{
+                        $('#modalMessage').text("Game successfully added to the cart!");
+                        $modalinfo.removeClass('info error');
+                        $modalinfo.addClass('done');
+                        $modalinfo.modal();
+                    }
+                },
+                error: function (data) {
+                    var $modalinfo = $("#modalInfo");
+                    // If the server has returned a valid error message, display that one
+                    if (data.responseJSON && data.responseJSON.error) {
+                        $('#modalMessage').text(data.responseJSON.error);
+                        $modalinfo.removeClass('done error');
+                        $modalinfo.addClass('info');
+                        $modalinfo.modal();
+                    }else if (data.status == 403){
+                        $('#modalMessage').text("You are not allowed to buy this game");
+                        $modalinfo.removeClass('done info');
+                        $modalinfo.addClass('error');
+                        $modalinfo.modal();
+                    } else if (data.status == 400) {
+                        $('#modalMessage').text("Game already in the cart.");
+                        $modalinfo.removeClass('done error');
+                        $modalinfo.addClass('info');
+                        $modalinfo$modalinfo.modal();
+                    } else {
+                        $('#modalMessage').text("An unexpected error has occurred. Please try again later!");
+                        $modalinfo.removeClass('done error');
+                        $modalinfo.addClass('info');
+                        $modalinfo.modal();
+
+                    }
+                }
+            });
+        }
+
+
+        //Those a functions used to format the data in the data starting from the response of the server
+
+        //we encode the data to avoid string problem due to ' and " characters
+        function nameFormatter(value, row, index){
+
+            var description = encodeData(row.description);
+            var name = encodeData(row.name);
+
+            return '<button class="nameToModal" data-toggle="modal" data-target="#modalGame" onclick="fillModal(\''+
+                    description+'\',\''+row.category+'\',\''+row.price+'\',\''+row.publicationDate+'\',\''+
+                    row.logo+'\',\''+name+'\',\''+row.popularity+'\', \''+row.id+'\')">'+value+'</button>';
+        }
+
+        function operateFormatter(value, row, index){
+            var html = '';
+            if(row.owned === false){
+                html = '<button class="btn btn-primary" onclick="add_game_cart('+value+',this);"> + </button>';
+            }
+            return html;
+        }
+
+        function logoFormatter(value, row, index){
+            return "<img alt=\"image not available\" class=\"gameImage\" src=\""+value+"\"/>";
+        }
+
+        function dateFormatter(value, row, index){
+            return formatDate(value);
+        }
+
+        function ownedFormatter(value, row, index){
+            if(value === true){
+                return [
+                    '<div class="glyphicon glyphicon-ok">',
+                ].join('');
+            }else{
+                return [
+                    '<div class="glyphicon glyphicon-remove">',
+                ].join('');
+            }
+
+        }
+
+        function priceFormatter(value, row, index){
+            return formatPrice(value);
+        }
+
+    </script>
+
+{% endblock %}
+
+
+{% block sidebar %}
+    <div id="sidebarContent">
+        {% if user.is_authenticated and user.profile.is_developer == False %}
+        <a class="btn btn-warning btn-block cartButton" href="{% url 'cart' %}" ><span class="glyphicon glyphicon-shopping-cart"></span> Go to cart</a>
+        {% endif %}
+        <p class="lead">Filter your game selection.</p>
+        <label>Order by</label>
+        <select class="form-control" id="orderSelect">
+            <option value="popularity">Popularity</option>
+            <option value="name">Name</option>
+            <option value="category">Category</option>
+            <option value="price">Price</option>
+        </select>
+        <br/>
+        <label>Name</label>
+        <input type="text"  id="nameSelect">
+        <br/>
+        <label>Category</label>
+        <select class="form-control" id="categoriesSelect">
+            <option value="" selected="selected">---------</option>
+        </select>
+        <br/>
+        <label>Page</label>
+        <select class="form-control" id="pageSelect">
+        </select>
+        <br/>
+        <p>In this page you can use the filter in order to browse our game catalog to find the best games for you.</p>
+        <p>You can add a game to the cart click on the "+" icon or open the detail by click on the name.</p>
+        <p>To proceed with the purchase you have to choose "Go to cart" here, or on the navbar under Profile.</p>
+    </div>
+
+    <script type="text/javascript">
+
+        //load the category in the filter
+        $.get("{% url 'categories' %}", function(res){
+
+                res.data.forEach(function(entry) {
+
+                    $("#categoriesSelect")
+                        .append($('<option>')
+                                .attr('value', entry.id)
+                                .text(entry.name)
+                        );
+                });
+            });
+
+
+        //bind the change of the filter with the request sent to the server
+        $("#categoriesSelect").change(function(){
+            sendFilter();
+        });
+        $("#orderSelect").change(function(){
+            sendFilter();
+        });
+        $("#pageSelect").change(function(){
+            sendFilter();
+        });
+        $("#nameSelect").keyup(function(){
+            sendFilter();
+        });
+
+
+        //fetch the data in order to make a new request for the filtered games
+        function sendFilter(){
+
+            var data = {};
+            if($("#nameSelect").val()!==''){
+                data.name = $("#nameSelect").val();
+            }
+            if($("#categoriesSelect option:selected").val()!==""){
+                data.category = $("#categoriesSelect option:selected").val();
+            }
+            data.orderby = $("#orderSelect option:selected").val();
+            data.page = $("#pageSelect option:selected").val();
+
+            loadTable(data);
+        }
+
+        //sends the filter to the server and reloads the bootstraptable with the new list
+        //it shows a loading message when it's doing the process
+        function loadTable(data){
+            $("#tableId").bootstrapTable('showLoading');
+            $.ajax({
+              url: "{% url 'games' %}",
+              data: data,
+              success: function (data) {
+                  $("#tableId").bootstrapTable('hideLoading');
+                  $("#tableId").bootstrapTable('load',data.games);
+                  $("#pageSelect").html("");
+
+                    for(var i=0;i<=(data.maxpage-1);i++){
+
+                        if(i== data.curpage){
+                            $("#pageSelect")
+                                .append($('<option>')
+                                        .attr('value', i)
+                                        .attr('selected', "selected")
+                                        .text(i+1)
+                                );
+                        }else{
+                            $("#pageSelect")
+                                .append($('<option>')
+                                        .attr('value', i)
+                                        .text(i+1)
+                                );
+                        }
+
+                    }
+
+              },
+                error: function() {
+                    $("#tableId").bootstrapTable('hideLoading');
+                }
+            });
+        }
+
+        //fills the modal with the game's information
+        function fillModal(description,category,price,publicationDate,logo,name,popularity,id){
+            $('#description').text(decodeData(description));
+            $('#category').text(category);
+            $('#price').text(formatPrice(price));
+            $('#publicationDate').text(formatDate(publicationDate));
+            $('#name').text(decodeData(name));
+            $('#logo').attr('src',logo);
+            $('#popularity').text(popularity);
+        }
+
+    </script>
+{% endblock %}

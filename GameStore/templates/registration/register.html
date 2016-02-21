@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% comment %}
+    In this page a user can regiter to the website
+{% endcomment %}
+{% block content %}
+    <form method="POST" action="#" class="form-signin">
+        <h1 class="form-signin-heading" id="local-title">Create an account</h1>
+        {% csrf_token %}
+        <table class="spaced_table">
+        {{ form.as_table }}
+        </table>
+        <input type="submit" class="btn btn-lg btn-primary btn-block" value="Submit" id="confirmButton"/>
+    </form>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div id="sidebarContent">
+        <p class="lead">Registration.</p>
+        <p>This is a simple form to register to our website, please fill all the required information and choose if you're a developer or not.</p>
+        <p>If you choose developer you'll be able to add game on our platform and check your income with statistics.</p>
+        <p>After your registration you'll receive a mail with a link used to activate your account.</p>
+    </div>
+
+{% endblock %}

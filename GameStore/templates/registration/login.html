@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% comment %}
+    In this page we let the user login into the website using the normal login or with the fb one
+{% endcomment %}
+{% block content %}
+    <div class="container">
+        <form method="post" action="#" class="form-login">
+            <h1 class="form-signin-heading" id="local-title">Welcome back!</h1>
+            {% csrf_token %}
+            <table class="spaced_table">
+                {{ form.as_table }}
+            </table>
+            <input type="submit" class="btn btn-lg btn-primary btn-block" value="Login" />
+            <a href="{% url 'password_reset'%}" id="passwordReset">Forgot your password?</a>
+            <br/>
+            <br/>
+            <p class="center-block text-center accountSpan">OR</p>
+            <!-- Facebook login -->
+            <a class="form-control btn btn-primary" onclick="$(this).button('loading');" id="facebook-button" name="facebook" href="{% url "social:begin" backend='facebook' %}">
+                Facebook Login
+            </a>
+        </form>
+
+    </div>
+{% endblock %}
+
+{% block sidebar %}
+    <div id="sidebarContent">
+        <p class="lead">Login.</p>
+        <p>This is a simple form to login on our website.</p>
+        <p>Insert your credentials to get access at your game or your developer plantform.</p>
+        <br/>
+        <br/>
+        <p class="lead">Don't have an account?</p>
+        <a class="btn btn-lg btn-success" href="{% url 'register' %}" role="button">Sign up</a>
+    </div>
+
+    <div id="status">
+    </div>
+
+{% endblock %}

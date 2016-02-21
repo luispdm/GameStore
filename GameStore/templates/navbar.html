@@ -1,0 +1,51 @@
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">GameStore: buy & play</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">GameStore: buy & play</a>
+    </div>
+    <div id="navbar" class="collapse navbar-collapse">
+      <ul class="nav navbar-nav navbar-right">
+        <li id="navbar-Home"><a href="{% url 'home' %}">Home</a></li>
+        <li id="navbar-Store"><a href="{% url 'list_games' %}" >Store</a></li>
+        <li id="navbar-LeaderBoard"><a href="{% url 'leader_board' %}" >Leaderboard</a></li>
+
+                {% if user.is_authenticated and user.profile.is_developer %}
+                <li class="dropdown" id="navbar-DevArea">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dev Area<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'dev_games' %}">Manage games</a></li>
+                        <li id="navbar-Inventory"><a href="{% url 'inventory' %}">Inventory</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+                {% if user.is_authenticated and user.profile.is_player %}
+                <li id="navbar-MyGames"><a href="{% url 'my_games' %}">My Games</a></li>
+                {% endif %}
+
+                <li class="dropdown" id="navbar-Profile">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Account...<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                    {% if user.is_authenticated %}
+                        <li class="dropdown-header">{% if backends.associated|length > 0 %}fb {% endif %}<span class="glyphicon glyphicon-user"> </span> {{ user.username }}</li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{% url 'account' %}">Profile</a></li>
+                        {% if not user.profile.is_developer %}
+                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'logout' %}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}">Login</a></li>
+                        <li><a href="{% url 'register' %}">Registration</a></li>
+                    {% endif %}
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

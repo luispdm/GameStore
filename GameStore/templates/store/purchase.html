@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Purchase{% endblock %}
+
+
+{% block content %}
+    {% load staticfiles %}
+
+    <div class="form-signin"  style="max-width: 700px;">
+        <h1 class="form-signin-heading" id="local-title">Order</h1>
+        {% for i in cart.games %}
+            <div id="div-{{ i.id }}" class="divSpace">
+                <div class="purchaseDiv">
+                    <p class="lead gameName">{{ i.name }} <span class="purchasePrice"><script type="text/javascript">document.write(formatPrice("{{ i.price }}"));</script></span></p>
+                </div>
+            </div>
+        {% endfor %}
+
+
+        <form action="{{ action }}" method="POST" id="purchaseForm">
+            <input type="hidden" name="pid" value="{{ pid }}" />
+            <input type="hidden" name="sid" value="{{ sid }}" />
+            <input type="hidden" name="success_url"
+                    value="{{ success_url }}" />
+            <input type="hidden" name="cancel_url"
+                    value="{{ cancel_url }}" />
+            <input type="hidden" name="error_url"
+                    value="{{ error_url }}" />
+            <input type="hidden" name="checksum"
+                    value="{{ checksum }}" />
+
+
+            <input type="text" id="id_amount" name="amount" value="{{ amount }}"/>
+            <label for="id_amount" class="alignRight">Amount</label>
+            <br/>
+            <br/>
+            <input type="submit" class="btn btn-lg btn-primary btn-block" value="Pay!"/>
+        </form>
+
+
+    </div>
+
+{% endblock %}
+
+{% block sidebar %}
+
+    <div id="sidebarContent">
+        <p class="lead">Purchase.</p>
+        <p>This is the last step before the payment.</p>
+        <p>You cannot modify the cart, check the total and go ahead with the system of payment.</p>
+    </div>
+
+{% endblock %}

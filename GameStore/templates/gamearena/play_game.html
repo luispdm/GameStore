@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Play{% endblock %}
+
+{% block content %}
+    {% comment %}
+        Iframe in which the game is displayed
+    {% endcomment %}
+    <iframe src="{{ remote_server }}" id="gameIframe"></iframe>
+
+    {% comment %}
+        Modal used to display messages in the page
+    {% endcomment %}
+    <div id="modalInfo" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <form class="form-signin" id="detailInfo">
+                    <h3 class="form-signin-heading" id="modalMessage">Title</h3>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // Global variable used to detect whether the user has played or not.
+        var current_score = 0;
+        {% comment %}
+            Fill leaderboard on the sidebar
+        {% endcomment %}
+        var lastUp = null;
+        function fillerListGames(){
+
+            // This funciton is called asynchronously multiple times.
+            // We use the jQuery promise functionality to queue all them
+            var prom = $.get("{{ game.leaderboard_url }}", function (res) {
+                    $("#listGamers").empty();
+                    for (var i = 0; i < res.scores.length; i++) {
+                        $("#listGamers")
+                                .append($('<tr>')
+                                        .append($('<td class="col-lg-6">')
+                                                .text(i + 1)
+                                        )
+                                        .append($('<td class="col-lg-6">')
+                                                .text(res.scores[i].player)
+                                        )
+                                        .append($('<td class="col-lg-6">')
+                                                .text(res.scores[i].score)
+                                        )
+                                );
+                    }
+                });
+
+            if (lastUp == null) {
+                lastUp = prom;
+            } else {
+                lastUp.done(prom);
+            }
+            $('#modalGame').modal();
+        }
+
+        $(function(){
+            fillerListGames();
+        });
+
+        {% comment %}
+            Listner to a message event handled by receiveMessage function
+        {% endcomment %}
+        window.addEventListener("message", receiveMessage, false);
+
+        var origin;
+
+
+        {% comment %}
+            Function that handle message from the game, check the integrity of the data and send it to the corrisponding URL
+            or if the data format is invalid send back an error to the game with the corresponding info
+        {% endcomment %}
+        function receiveMessage(event)
+        {
+
+            var message =  {
+                    messageType: "ERROR"
+                };
+
+            if(event.data.messageType == "SCORE"){
+                var score = parseFloat(event.data.score);
+                if(isNaN(score)){
+                    message.info = "Invalid Score";
+                    sendMessageToIFrame(message);
+                    return;
+                }
+                // Save into this global variable so we can enable fb sharing
+                current_score = event.data.score;
+                sendData(event.data,"#");
+                $('#score').text(score);
+
+            }else if(event.data.messageType == "SAVE"){
+                if(!tryParseJSON(JSON.stringify(event.data.gameState))){
+                    message.info = "Invalid json format";
+                    sendMessageToIFrame(message);
+                    return;
+                }
+                event.data.gameState = JSON.stringify(event.data.gameState);
+                sendData(event.data,"#");
+
+            }else if(event.data.messageType == "LOAD_REQUEST"){
+                sendData(event.data,"#");
+
+            }else if(event.data.messageType == "SETTING"){
+                var width = parseInt(event.data.options.width);
+                var height = parseInt(event.data.options.height);
+                if(!isNaN(width)){
+                    if(width>800){
+                        width = 800;
+                    }else if(width<20){
+                        width = 20;
+                    }
+                    $('#gameIframe').css('width',width);
+                }
+                if(!isNaN(height)){
+                    if(height>1000){
+                        height = 1000;
+                    }else if(height<20){
+                        height = 20;
+                    }
+                    $('#gameIframe').css('height',height);
+                }
+            }
+        }
+
+        {% comment %}
+            Function that locate the iframe and send the messages to the game
+            A pop up is shown if no iframe is found
+        {% endcomment %}
+        function sendMessageToIFrame(message){
+            var iframe = document.getElementById('gameIframe');
+            if(iframe){
+                iframe.contentWindow.postMessage(message, "*");
+            }else{
+                $('#modalMessage').text("Ops, game not found!");
+                $("#modalInfo").removeClass('info done');
+                $("#modalInfo").addClass('error');
+                $("#modalInfo").modal();
+            }
+        }
+
+        {% comment %}
+            Send an ajax POST request to the server with the csrf token and the data collected from the message handler
+            It can handle error that are send back to the game with the sendMessageToIFrame() function
+            In case of success if the response is a LOAD message, the information about the gameState are sent back to the game
+            and the score in the sidebar is updated
+        {% endcomment %}
+        function sendData(data, url){
+            data.csrfmiddlewaretoken = "{{ csrf_token  }}";
+
+            var message = {};
+
+            $.ajax({
+                method:'POST',
+                url: url,
+                data: data,
+                success:function(data) {
+                    if (data.error){
+                        message =  {
+                            messageType: "ERROR",
+                            info: data.error
+                        };
+                        sendMessageToIFrame(message);
+                    }
+                    else {
+                        if(data.result){
+                            message.messageType = "LOAD";
+                            message.gameState = jQuery.parseJSON(data.result);
+                            sendMessageToIFrame(message);
+                            $('#score').text(message.score);
+                        }else{
+                            fillerListGames();
+                        }
+
+                        /*
+                        $('#modalMessage').text("Done!");
+                        $("#modalInfo").removeClass('info error');
+                        $("#modalInfo").addClass('done');
+                        $("#modalInfo").modal();
+                        */
+                    }
+                },
+                error: function (data) {
+                    if (data.error){
+                        message =  {
+                            messageType: "ERROR",
+                            info: data.error
+                        };
+                        sendMessageToIFrame(message);
+                    }
+                }
+            });
+        }
+
+        {% comment %}
+            Check the JSON, return false if isn't valid
+            src: http://stackoverflow.com/questions/3710204/how-to-check-if-a-string-is-a-valid-json-string-in-javascript-without-using-try
+        {% endcomment %}
+
+        function tryParseJSON (jsonString){
+            try {
+                var o = JSON.parse(jsonString);
+                if (o && typeof o === "object" && o !== null) {
+                    return true;
+                }
+            }
+            catch (e) { }
+            return false;
+        }
+
+    </script>
+{% endblock %}
+
+
+{% block sidebar %}
+    {% load staticfiles %}
+    {% comment %}
+        Basics information about the game
+    {% endcomment %}
+    <div id="sidebarContent">
+        <h2>{{ game.name }}</h2>
+        <p class="lead"></p>
+        <label>Score</label>
+        <br/>
+        <p id="score">0</p>
+        <br/>
+        <button id="btn-share" class="btn btn-primary"><img src="{% static 'images/fbIcon.png' %}" width="30" alt="Facebook Share"> Share!</button>
+        <h3 class="form-signin-heading">Top 10 players</h3>
+        <table class="leaderTable">
+            <thead>
+                <tr>
+                    <th class="col-lg-6">Rank</th>
+                    <th class="col-lg-6">Username</th>
+                    <th class="col-lg-6">Score</th>
+                </tr>
+            </thead>
+            <tbody id="listGamers">
+            </tbody>
+        </table>
+    </div>
+    <script type="text/javascript">
+    //this function allow the user to share on facebook the score and the game that he's playing at
+    //it makes the request checking if the connection is secure or not
+    //if the game doesn't have a picture we use the standard one, its URL is manually composed
+    $(function(){
+        $("#btn-share").click(function(){
+            var width = 800;
+            var height=600;
+            var leftPosition, topPosition;
+            leftPosition = (window.screen.width / 2) - ((width / 2) + 10);
+            topPosition = (window.screen.height / 2) - ((height / 2) + 50);
+            var windowFeatures = "status=no,height=" + height + ",width=" + width + ",resizable=yes,left=" + leftPosition + ",top=" + topPosition + ",screenX=" + leftPosition + ",screenY=" + topPosition + ",toolbar=no,menubar=no,scrollbars=no,location=no,directories=no";
+
+            var caption = "{{request.build_absolute_uri|urlencode}}";
+            {% if request.is_secure %}
+            var redurl = "https://{{ request.get_host|urlencode }}{% url 'close_popup' %}";
+            {% else %}
+            var redurl = "http://{{ request.get_host|urlencode }}{% url 'close_popup' %}";
+            {% endif %}
+
+            var original_picture = "{{ game.logo }}";
+            var picture = "";
+            if (original_picture.indexOf("/static") == 0) {
+                // This image is local to our webservice, compose the url manually.
+                {% if request.is_secure %}
+                    picture=encodeURIComponent("https://{{ request.get_host }}{% static 'images/no-image-available.jpg' %}");
+                {% else %}
+                    picture=encodeURIComponent("http://{{ request.get_host }}{% static 'images/no-image-available.jpg' %}");
+                {% endif %}
+            } else {
+                // Use the original picture
+                picture = "{{game.logo|urlencode}}";
+            }
+
+            var name = "GameStore: come and play!";
+            var description = "";
+            if (current_score>0)
+                description = "I am playing to " + encodeURIComponent("{{ game.name }}") + " and my last game score was: " + current_score;
+            else
+                description = "I am playing to " + encodeURIComponent("{{ game.name }}");
+
+            var link = 'https://www.facebook.com/dialog/feed?app_id=970368946366357&display=popup&name='+ name +'&description=' + description + '&picture=' + picture + '&link=' + caption + '&caption=' + caption + '&redirect_uri=' + redurl;
+            window.open(link,"Share", windowFeatures);
+        });
+    });
+    </script>
+
+{% endblock %}

@@ -1,0 +1,80 @@
+{% comment %}
+    This is the base template. Everything is inherited from this page.
+    JS and CSS are included here.
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-theme.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    {% block pluggable_style %}
+    {% endblock %}
+    <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+    <script src="{% static 'js/bootstrap-table.js' %}"></script>
+    <script src="{% static 'js/utils.js' %}"></script>
+    <!--<script src="{% static 'js/npm.js' %}"></script>-->
+    {% block pluggable_script %}
+    {% endblock %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameStore - {% block title %}Home{% endblock %}</title>
+</head>
+
+<body>
+    {% comment %}
+        The navbar is displayed in the top of the page and is fixed in each page
+    {% endcomment %}
+    {% include "navbar.html" %}
+
+    {% comment %}
+        Content displays the most important part of the page, could be a form for login or a list of game.
+    {% endcomment %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8" id="content">
+                {% comment %}
+                    List of messages used to deliver informations, warnings or errors to the user
+                {% endcomment %}
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>
+                        {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% comment %}
+                    List errors generated from the form
+                {% endcomment %}
+                {% if form.errors %}
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <div class="alert alert-error">
+                                <strong>{{ error|escape }}</strong>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <div class="alert alert-error">
+                            <strong>{{ error|escape }}</strong>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% block content %}{% endblock %}
+                {% comment %}
+                    Displayed in same page, it helps the user with filter or other functionality
+                {% endcomment %}
+            </div>
+            <div id="sidebar" class="col-md-4">
+                {% block sidebar %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

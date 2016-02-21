@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard{% endblock %}
+
+{% block content %}
+
+    <div class="table-responsive">
+        <table class="table table-hover" id="tableId" data-id-field="id">
+            <thead>
+                <tr>
+                    <th data-field="logo" data-formatter="logoFormatter">Logo</th>
+                    <th data-field="name" data-formatter="nameFormatter">Name</th>
+                    <th data-field="category" >Category</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="modalGame" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h2 class="form-signin-heading">Top 10 players</h2>
+                </div>
+                <div class="modal-body">
+                    <div class="form-signin" id="detailGame">
+                        <table class="leaderTable">
+                            <thead>
+                                <tr>
+                                    <th class="col-lg-6">Rank</th>
+                                    <th class="col-lg-6">Username</th>
+                                    <th class="col-lg-6">Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listGamers">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        $( "#navbar-LeaderBoard" ).addClass('active');
+
+        //Initialization of the bootstrap table
+        $( document ).ready(function() {
+            $("#tableId").bootstrapTable();
+            sendFilter();
+        });
+    </script>
+
+{% endblock %}
+
+
+{% block sidebar %}
+
+    {% comment %}
+        Filter for the leaderborad list
+    {% endcomment %}
+
+    <div id="sidebarContent">
+        <p class="lead">Filter the game leaderboard.</p>
+        <label>Order by</label>
+        <select class="form-control" id="orderSelect">
+            <option value="popularity">Popularity</option>
+            <option value="name">Name</option>
+            <option value="category">Category</option>
+            <option value="price">Price</option>
+        </select>
+        <br/>
+        <label>Name</label>
+        <input type="text"  id="nameSelect">
+        <br/>
+        <label>Category</label>
+        <select class="form-control" id="categoriesSelect">
+            <option value="" selected="selected">---------</option>
+        </select>
+        <br/>
+        <label>Page</label>
+        <select class="form-control" id="pageSelect">
+        </select>
+        <br/>
+        <p>In this page you can use the filter in order to find the best player in our website.</p>
+        <p>You can see the Top10 player per each game thanks to a click on the game name.</p>
+    </div>
+    <script type="text/javascript">
+
+        //populated the categories select in the sidebar
+        $.get("{% url 'categories' %}", function(res){
+
+                res.data.forEach(function(entry) {
+
+                    $("#categoriesSelect")
+                        .append($('<option>')
+                                .attr('value', entry.id)
+                                .text(entry.name)
+                        );
+                });
+            });
+
+
+        //when some filter change the sendFilter is triggered
+        $("#categoriesSelect").change(function(){
+            sendFilter();
+        });
+        $("#orderSelect").change(function(){
+            sendFilter();
+        });
+        $("#pageSelect").change(function(){
+            sendFilter();
+        });
+        $("#nameSelect").keyup(function(){
+            sendFilter();
+        });
+
+
+        //this function fetch the data in order to make a new request for games that fit the filters
+        function sendFilter(){
+
+            var data = {};
+            if($("#nameSelect").val()!==''){
+                data.name = $("#nameSelect").val();
+            }
+            if($("#categoriesSelect option:selected").val()!==""){
+                data.category = $("#categoriesSelect option:selected").val();
+            }
+            data.orderby = $("#orderSelect option:selected").val();
+            data.page = $("#pageSelect option:selected").val();
+
+            loadTable(data);
+        }
+
+
+        //this function shows a loading message in the table and makes a request to the server in order to build
+        //a new table that fits the filters
+        function loadTable(data){
+            $("#tableId").bootstrapTable('showLoading');
+            $.ajax({
+              url: "{% url 'games' %}",
+              data: data,
+              success: function (data) {
+                  $("#tableId").bootstrapTable('hideLoading');
+                  $("#tableId").bootstrapTable('load',data.games);
+                  $("#pageSelect").html("");
+
+                    for(var i=0;i<=(data.maxpage-1);i++){
+
+                        if(i== data.curpage){
+                            $("#pageSelect")
+                                .append($('<option>')
+                                        .attr('value', i)
+                                        .attr('selected', "selected")
+                                        .text(i+1)
+                                );
+                        }else{
+                            $("#pageSelect")
+                                .append($('<option>')
+                                        .attr('value', i)
+                                        .text(i+1)
+                                );
+                        }
+
+                    }
+
+              },
+                error: function() {
+                    $("#tableId").bootstrapTable('hideLoading');
+                }
+            });
+        }
+
+        //this function wrap the game name in order to trigger a function that populate the top10 modal with data and scores
+        function nameFormatter(value, row, index){
+            return '<button class="nameToModal" onclick="fillerListGames(\''+row.leaderboard_url+'\')">'+value+'</button>';
+
+        }
+
+        //this function display the image
+        function logoFormatter(value, row, index){
+            return "<img alt=\"image not available\" class=\"gameImage\" src=\""+value+"\"/>";
+        }
+
+        //this function takes the url of the game and load the information in a table inside the modal.
+        function fillerListGames(url){
+
+            $("#listGamers").html('');
+            $.get(url.trim(), function(res){
+            var i=0;
+                res.scores.forEach(function(entry) {
+                    i++;
+                    $("#listGamers")
+                        .append($('<tr>')
+                            .append($('<td class="col-lg-6">')
+                                .text(i)
+                            )
+                            .append($('<td class="col-lg-6">')
+                                .text(entry.player)
+                            )
+                            .append($('<td class="col-lg-6">')
+                                .text(entry.score)
+                            )
+                        );
+                });
+            });
+
+            $('#modalGame').modal();
+
+        }
+    </script>
+{% endblock %}

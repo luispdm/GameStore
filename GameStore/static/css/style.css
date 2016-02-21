@@ -1,0 +1,422 @@
+body{
+    background-image: url("../images/background.jpg");
+    background-repeat: repeat;
+}
+
+select{
+    color: #000;
+}
+
+label{
+}
+
+form p{
+    text-align: center;
+}
+
+form label {
+    color:#9d9d9d;
+}
+
+.input-group {
+    margin-bottom: 5px;
+}
+
+input, textarea, select{
+    /* margin: 5px 0px 0px 5px; */
+    border-radius: 6px;
+    padding-left: 3px;
+    color: #000;
+    width: 100%;
+
+}
+
+textarea{
+    height: 67px;
+    resize: none;
+}
+
+table{
+    margin: 0 auto;
+}
+
+iframe{
+    width: 100%;
+    height: 300px;
+    background-color: #fff;
+}
+
+/*
+ * TODO: scommentare per rimuovere gli errori all'interno del form
+ *
+form .errorlist{
+    display: none;
+}
+ */
+#sidebar{
+
+}
+
+.alert .alert-error{
+    width: 90%;
+    margin: 0 auto;
+}
+
+.alert-social-auth{
+    width: 90%;
+    margin: 0 auto;
+    color: #fff;
+    background-image: -webkit-linear-gradient(top, #D53B3B   0%, #661010  100%);
+    background-image: -o-linear-gradient(top, #D53B3B   0%, #661010  100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#D53B3B ), to(#661010 ));
+    background-image: linear-gradient(to bottom, #D53B3B   0%, #661010  100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffdff0d8', endColorstr='#ffc8e5bc', GradientType=0);
+    background-repeat: repeat-x;
+    border-color: #5E0606;
+}
+
+/* Alberto's edit. This is bad accoring to me. Using bootstrap's default is better
+#content{
+    float: left;
+    clear: both;
+    width: 70%;
+}
+*/
+#content {
+    margin-top: 80px;
+}
+
+.center p a{
+    margin: 0 auto;
+}
+
+#sidebarContent{
+    color: #9d9d9d;
+    padding:15px;
+    margin-top: 65px;
+}
+
+.gameOwned {
+    background: #f00;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+}
+
+.gameNotOwned {
+    background: #0f0;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+}
+
+.helptext {
+    display: none;
+}
+
+.alert{
+    width: 90%;
+    margin: 2px;
+    color: #fff;
+}
+
+.alert-error{
+    width: 90%;
+    background-color: #760E09;
+}
+
+#local-title{
+    text-align: center;
+    width: 100%;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    color: #fff;
+    margin: 0 auto;
+}
+
+.form-login {
+    max-width: 300px;
+    padding: 15px;
+    margin: 0 auto;
+}
+
+.form-signin {
+    max-width: 500px;
+    padding: 15px;
+    margin: 0 auto;
+}
+.form-login, .form-signin .form-signin-heading,
+.form-login, .form-signin .checkbox {
+    margin-bottom: 10px;
+}
+.form-login, .form-signin .checkbox {
+    font-weight: normal;
+}
+.form-login, .form-signin .form-control {
+    position: relative;
+    height: auto;
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+    padding: 3px;
+    font-size: 16px;
+}
+.form-login, .form-signin .form-control:focus {
+    z-index: 2;
+}
+
+/* Main message home page */
+.jumbotron {
+    text-align: center;
+    color: #fff;
+    background-color: transparent;
+}
+
+.alert-info{
+    background-image: -webkit-linear-gradient(top, #5BA3C7  0%, #0D435E 100%);
+    background-image: -o-linear-gradient(top, #5BA3C7  0%, #0D435E 100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#5BA3C7 ), to(#0D435E));
+    background-image: linear-gradient(to bottom,#5BA3C7 0,#0D435E 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5BA3C7', endColorstr='#0D435E', GradientType=0);
+    background-repeat: repeat-x;
+    border-color: #0D435E;
+}
+
+.alert-success{
+    background-image: -webkit-linear-gradient(top, #83DB5E  0%, #2E531E 100%);
+    background-image: -o-linear-gradient(top, #83DB5E  0%, #2E531E 100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#83DB5E ), to(#2E531E));
+    background-image: linear-gradient(to bottom, #83DB5E  0%, #2E531E 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffdff0d8', endColorstr='#ffc8e5bc', GradientType=0);
+    background-repeat: repeat-x;
+    border-color: #538F3A;
+}
+
+.alert-error{
+    background-image: -webkit-linear-gradient(top, #D53B3B   0%, #661010  100%);
+    background-image: -o-linear-gradient(top, #D53B3B   0%, #661010  100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#D53B3B ), to(#661010 ));
+    background-image: linear-gradient(to bottom, #D53B3B   0%, #661010  100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffdff0d8', endColorstr='#ffc8e5bc', GradientType=0);
+    background-repeat: repeat-x;
+    border-color: #5E0606;
+}
+
+.alert-warning{
+    background-image: -webkit-linear-gradient(top, #c2c791 0%, #bcc13c 100%);
+    background-image: -o-linear-gradient(top, #c2c791  0%, #bcc13c 100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#c2c791 ), to(#bcc13c));
+    background-image: linear-gradient(to bottom,#c2c791 0,#bcc13c 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#c2c791', endColorstr='#bcc13c', GradientType=0);
+    background-repeat: repeat-x;
+    border-color: #bcc13c;
+}
+
+.gameImage{
+    max-width: 100px;
+    max-height: 60px;
+    min-width: 100px;
+    min-height: 60px;
+    overflow: hidden;
+}
+
+#nameSelect{
+    width: 100%;
+    height: 35px;
+    margin-bottom: 20px;
+}
+
+.table {
+    background-color: #f9f9f9;
+}
+
+.bootstrap-table .table > thead :first-child {
+    background-color:#2a6496;
+    border-top-left-radius: 6px;
+}
+
+.bootstrap-table .table > thead :last-child {
+    background-color:#2a6496;
+    border-top-right-radius: 6px;
+}
+
+.bootstrap-table .table > tbody > tr :last-child {
+    border-bottom-right-radius: 6px;
+}
+
+.bootstrap-table .table > tbody > tr :first-child {
+    border-bottom-left-radius: 6px;
+}
+
+#myTable .table > tbody > tr :first-child {
+    border-bottom-left-radius: 6px;
+}
+
+#myTable .table > tbody > tr :last-child {
+    border-bottom-right-radius: 6px;
+}
+
+.fixed-table-container thead th {
+    border-left-color:#2a6496;
+}
+
+.gameName{
+    color: #ACA5A5;
+    font-size: 25px;
+}
+
+.gamePrice{
+    color:green;
+}
+
+.gameRemove{
+    float: right;
+    font-size: 10px;
+}
+
+#total{
+    color:green;
+}
+
+.imageDiv{
+    float: left;
+    width: 100px;
+    margin-right: 20px;
+}
+
+.infoDiv{
+    float: left;
+    width: 72%;
+    clear: right;
+}
+
+.purchaseDiv{
+    float: left;
+    width: 100%;
+    clear: right;
+}
+
+#tableId {
+    /*border: 1px solid #2A6496;*/
+    border-radius: 6px;
+    margin-bottom: 0px;
+}
+
+.purchasePrice{
+    float: right;
+    font-size: 20px;
+}
+
+#purchaseForm label{
+    color: green;
+}
+
+#dollar{
+    width: 120px;
+    margin: 0 auto;
+}
+
+.nameToModal{
+     background:none!important;
+     border:none;
+     padding:0!important;
+     font: inherit;
+     cursor: pointer;
+}
+
+.nameToModal:hover{
+    color:#2a6496;
+}
+
+.done{
+    color: green;
+}
+
+.error{
+    color: red;
+}
+
+.info{
+    color: #2A6496;
+}
+
+#detailInfo{
+    max-width: 430px;
+}
+
+#myTable th{
+    background-color: #2A6496;
+}
+
+#myTable{
+    border-radius: 6px;
+    margin-bottom: 0px;
+}
+
+#myTable > label{
+    color:#fff;
+}
+
+#myTableContainer{
+    border-radius: 6px;
+    text-align: center;
+}
+
+.spaced_table tr > td {
+    padding:10px;
+}
+
+.modal_table > label{
+    color: black;
+}
+
+.divSpace{
+    display:block;
+    overflow:auto;
+    margin-bottom: 5px;
+}
+
+.alignRight{
+    float: right;
+}
+
+#id_amount{
+    text-align: right;
+}
+
+.cartButton{
+    margin-bottom: 20px;
+}
+
+.leaderTable th{
+    color: #0E59A6;
+}
+
+.accountP{
+    color: #9d9d9d;
+    font-size: 25px;
+}
+
+.accountSpan{
+    color:#fff;
+}
+
+#passwordReset{
+    font-size: 14px;
+    text-align: center;
+    display: block;
+    padding-top: 5px;
+}
+
+#confirmButton{
+    display: block;
+    width: 20%;
+    margin: 0 auto;
+}
+
+.center-div{
+    max-width: 500px;
+    padding: 15px;
+    text-align: center;
+    margin: 0 auto;
+}
